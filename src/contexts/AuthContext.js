@@ -1,31 +1,44 @@
 import createDataContext from "./createDataContext";
+import trackerApi from '../api/tracker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { navigate } from '../navigationRef';
 
 const authReducer = (state, action) => {
     switch (action.type) {
+        case 'signin':
+            return { ...state, token: action.payload };
+        case 'add_error':
+            return { errorMessage: '', errorMessage: action.payload };
         default:
             return state;
     }
 };
 
-const signup = (dispatch) => {
-    return ({ email, password }) => {
-        // make api request to sign up with that email and password
+const signup = dispatch => async ({ email, password }) => {
+    try {
+        const response = await trackerApi.post('/signup', { email, password });
+        await AsyncStorage.setItem('token', response.data.token);
+        dispatch({ type: 'signin', payload: response.data.token });
 
-        // if we sign up, modify our state to say we are authenticated
-
-        // if signing up fails, reflect an error message
-    };
+        navigate('TrackList');
+    } catch (err) {
+        dispatch({ type: 'add_error', payload: 'Something went wrong with sign up' });
+    }
 };
 
-const signin = (dispatch) => {
-    return ({ email, password }) => {
-        // Try to sign in
-        // Handle success by updating state
-        // Handle failure by showing error message
-    };
+const signin = dispatch => async ({ email, password }) => {
+    try {
+        const response = await trackerApi.post('/signin', { email, password });
+        await AsyncStorage.setItem('token', response.data.token);
+        dispatch({ type: 'signin', payload: response.data.token });
+
+        navigate('TrackList');
+    } catch (err) {
+        dispatch({ type: 'add_error', payload: 'Something went wrong with sign in' });
+    }
 };
 
-const signout = (dispatch) => {
+const signout = dispatch => {
     return () => {
         // Sign out
     };
@@ -34,5 +47,5 @@ const signout = (dispatch) => {
 export const { Provider, Context } = createDataContext(
     authReducer,
     { signin, signout, signup },
-    { isSignedIn: false }
+    { token: null, errorMessage: '' }
 );
