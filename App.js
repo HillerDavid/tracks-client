@@ -5,6 +5,7 @@ import {
   createAppContainer,
   createSwitchNavigator
 } from 'react-navigation';
+import ResolveAuthScreen from './src/screens/ResolveAuthScreen';
 import AccountScreen from "./src/screens/AccountScreen";
 import SigninScreen from "./src/screens/SigninScreen";
 import SignupScreen from "./src/screens/SignupScreen";
@@ -15,6 +16,7 @@ import { Provider as AuthProvider } from './src/contexts/AuthContext';
 import { setNavigator } from './src/navigationRef';
 
 const switchNavigator = createSwitchNavigator({
+  ResolveAuth: ResolveAuthScreen,
   loginFlow: createStackNavigator({
     Signup: SignupScreen,
     Signin: SigninScreen
