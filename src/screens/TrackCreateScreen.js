@@ -1,45 +1,26 @@
-// import '../_mockLocation';
-import React, { useState, useEffect, useContext } from 'react';
+import '../_mockLocation';
+import React, { useContext } from 'react';
 import { StyleSheet, SafeAreaView, StatusBar } from 'react-native';
+import { withNavigationFocus } from 'react-navigation';
 import { Text } from 'react-native-elements';
 import Map from '../components/Map';
-import { requestForegroundPermissionsAsync, watchPositionAsync, Accuracy } from 'expo-location';
+import TrackForm from '../components/TrackForm';
 import { Context as LocationContext } from '../contexts/LocationContext';
+import useLocation from '../hooks/useLocation';
 
-const TrackCreateScreen = () => {
-    const { addLocation } = useContext(LocationContext);
-    const [err, setErr] = useState(null);
-
-    const startWatching = async () => {
-        try {
-            const { granted } = await requestForegroundPermissionsAsync();
-
-            if (!granted) {
-                throw new Error('Location permission not granted');
-            }
-
-            await watchPositionAsync({
-                accuracy: Accuracy.BestForNavigation,
-                timeInterval: 1000,
-                distanceInterval: 10
-            }, (location) => {
-                addLocation(location);
-            });
-
-        } catch (err) {
-            setErr(err);
-        }
-    };
-
-    useEffect(() => {
-        startWatching();
-    }, []);
+const TrackCreateScreen = ({ isFocused }) => {
+    const { state, addLocation } = useContext(LocationContext);
+    const [err] = useLocation(isFocused, location =>
+        addLocation(location, state.recording)
+    );
 
     return (
         <SafeAreaView style={styles.container}>
             <Text h2>Create a Track</Text>
             <Map />
             {err && <Text>Please enable location permission</Text>}
+
+            <TrackForm />
         </SafeAreaView>
     );
 };
@@ -52,4 +33,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default TrackCreateScreen;
+export default withNavigationFocus(TrackCreateScreen);
